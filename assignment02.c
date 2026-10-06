@@ -17,7 +17,9 @@ such as the GLFW binary and header
 #define GLFW_INCLUDE_NONE // just incase it doesnt detect glad
 
 #include <GLFW/glfw3.h>
+#include <fast_obj.h>
 #include "ngls.h"
+
 
 
 // function prototypes
