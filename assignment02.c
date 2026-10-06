@@ -109,10 +109,8 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// actual opengl code goes here
-		//glDrawArrays(GL_TRIANGLES, 0, vertices_size/3);
-		// Inside your main loop:
-		glDrawArrays(GL_LINE_STRIP, 0, vertices_size / 3);
-
+		glDrawArrays(GL_TRIANGLES, 0, vertices_size/3);
+		
 		glfwSwapBuffers(window);
 		lastFrame = glfwGetTime();
 	}

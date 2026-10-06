@@ -146,10 +146,14 @@ const GLuint buildProgram2(const char* vertex_shader_text, const char* fragment_
 }
     
 
-int initRenderable2D(float* verts, GLuint program)
+int initRenderable2D(float* verts, GLuint program, unsigned int numAtributes,)
 {
 	// we should be able to extract the shader info from the program
 	// we should be able to generate the VBO and size from the 
+
+
+
+
 }
 
 
