@@ -49,6 +49,7 @@ const GLuint buildFragmentShader(const char* fragment_shader_text);
 // each of these is somewhat more abstract and automated as the number goes up
 const GLuint buildProgram(GLuint vertex_shader, const GLuint fragment_shader);
 const GLuint buildProgram2(const char* vertex_shader_text, const char* fragment_shader_text);
+const GLuint buildProgram3(const char* vs_file, const char* fs_file);
 
 // helper functions
 const char* loadFile(char* filename); // note: this function was generated using AI
@@ -144,21 +145,13 @@ const GLuint buildProgram2(const char* vertex_shader_text, const char* fragment_
 	GLuint fs = buildFragmentShader(fragment_shader_text);
 	return buildProgram(vs, fs);
 }
-    
 
-int initRenderable2D(float* verts, GLuint program, unsigned int numAtributes,)
+/* builds a program directly from the shader file names */
+const GLuint buildProgram3(const char* vs_file, const char* fs_file)
 {
-	// we should be able to extract the shader info from the program
-	// we should be able to generate the VBO and size from the 
-
-
-
-
+    return buildProgram2(loadFile(vs_file), loadFile(fs_file));
 }
-
-
-
-
+    
 
 
 

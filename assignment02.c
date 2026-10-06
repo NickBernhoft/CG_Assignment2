@@ -36,11 +36,6 @@ int main()
 
 	int vertices_size = sizeof(vertices) / sizeof(float);
 
-	const char* vertex_shader_text = loadFile("./shaders/vertex_shader.vs");
-	const char* fragment_shader_text = loadFile("./shaders/fragment_shader.fs");
-
-
-
 
 	// init glfw and make the window
 	if (!glfwInit())
@@ -72,7 +67,7 @@ int main()
 		we need: VertevBuffer->VertexArray VertexShader->FragmentShader->Program */
 
 	// create the Program
-	GLuint program = buildProgram2(vertex_shader_text, fragment_shader_text); // my function
+	GLuint program = buildProgram3("./shaders/vertex_shader.vs", "./shaders/fragment_shader.fs"); // my function
 	glUseProgram(program);
 
 	// create and bind the vao and vbo
