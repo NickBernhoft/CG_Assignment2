@@ -42,7 +42,7 @@ typedef struct
 /* Function Prototypes */
 
 // openGL shortcuts
-GLuint buildVertexBuffer(const float* vertices, size_t size);
+GLuint buildVertexBuffer(void* vertices, size_t size);
 const GLuint buildVertexShader(const char* vertex_shader_text);
 const GLuint buildFragmentShader(const char* fragment_shader_text);
 
@@ -57,9 +57,10 @@ const char* loadFile(char* filename); // note: this function was generated using
 
 /*
 creates a filled vertex buffer in VRAM and then returns a handle to it.
+this is void so you can buffer any format of float data you want.
 TODO: add error handling
 */
-GLuint buildVertexBuffer(const float vertices[], size_t size)
+GLuint buildVertexBuffer(void* vertices, size_t size)
 {
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
