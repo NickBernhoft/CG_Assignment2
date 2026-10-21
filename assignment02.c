@@ -1,7 +1,8 @@
 /*
-this code was written for assignment01 of CAP5725 on Aug 26, 2026
+this code was written for assignment02 of CAP5725 on September 20, 2026
 
 This project is designed to run on macos 11.7.11
+although windows support may be added
 all resources for this project to be compiled on macos are included in the directory
 such as the GLFW binary and header
 */
