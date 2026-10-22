@@ -41,6 +41,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 obj_vertex* create_geometry_buffer(const fastObjMesh* mesh, unsigned int* out_count);
 obj_vertex* buildObjBuffer(const char* fileName, unsigned int *vertCount);
 
+
+
+
 int main()
 {
 	int width = 640;
@@ -84,7 +87,7 @@ int main()
 	glUseProgram(program);
 
 	// create and bind the vao and vbo
-	GLuint vbo = buildVertexBuffer(vertices, vertCount); // my function
+	GLuint vbo = buildVertexBuffer(vertices, sizeof(obj_vertex),vertCount); // my function
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 	GLuint vao;
@@ -92,18 +95,34 @@ int main()
     glBindVertexArray(vao);
 
 
-    /* define the uniforms */
-    // transformation
-    GLint trans_matrix_location = glGetUniformLocation(program, "trans_matrix");
-	mat4 tm;
-    glm_mat4_identity(tm);
+    /* DEFINE UNIFORMS */
 
+    // transformation matrix
+    GLint trans_matrix_location = glGetUniformLocation(program, "trans_matrix");
+	
+	// making the camera transformation matrix
+	mat4 tm;
+	glm_mat4_identity(tm);
+
+	// presoective matrix
+	glm_perspective_default( (float) width / height, tm);
+
+    // gml lookat
+	vec3 eye = 		{0.0f, 0.0f, 0.2f};
+	vec3 center = 	{0.0f, 0.0f, 0.0f};
+	vec3 up = 		{0.0f, 1.0f, 0.0f};
+	glm_lookat(eye, center, up, tm);
+
+
+	// temporary scaling because the model is big
 	vec3 scale_amount = { 0.05f, 0.05f, 0.05f };
     glm_scale(tm, scale_amount);
-
+  	// set the uniform in the snader
 	glUniformMatrix4fv(trans_matrix_location, 1, GL_FALSE, (float*)tm);
 
-    /* define the in Vecs */
+
+
+    /* DEFINE IN VECS */
     GLsizei stride = sizeof(obj_vertex);
     // in vec3 vpos;
 	glEnableVertexAttribArray(glGetAttribLocation(program, "vpos"));
@@ -149,6 +168,11 @@ int main()
     glfwTerminate();
     return 0;
 }
+
+
+
+
+
 
 
 

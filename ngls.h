@@ -42,7 +42,7 @@ typedef struct
 /* Function Prototypes */
 
 // openGL shortcuts
-GLuint buildVertexBuffer(void* vertices, size_t size);
+GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVertices);
 const GLuint buildVertexShader(const char* vertex_shader_text);
 const GLuint buildFragmentShader(const char* fragment_shader_text);
 
@@ -52,20 +52,22 @@ const GLuint buildProgram2(const char* vertex_shader_text, const char* fragment_
 const GLuint buildProgram3(const char* vs_file, const char* fs_file);
 
 // helper functions
-const char* loadFile(char* filename); // note: this function was generated using AI
+const char* loadFile(const char* filename); // note: this function was generated using AI
 
 
 /*
-creates a filled vertex buffer in VRAM and then returns a handle to it.
-this is void so you can buffer any format of float data you want.
-TODO: add error handling
+Parameters: 
+void* vertices: pointer to the array of data in RAM. can be a struct.
+size_t element_size: size in bytes of the type of data youre buffering.
+size_t numVertices: number of elements in the array you would like to buffer
+
 */
-GLuint buildVertexBuffer(void* vertices, size_t size)
+GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVertices)
 {
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * size, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, element_size * numVertices, vertices, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     return vertex_buffer;
@@ -163,7 +165,7 @@ note: this function was generated using AI on account of the fact that
 	its a failty trivial thing in C which we learned in undergrad.
 	i thought this was the perfect time for automation
 */
-const char* loadFile(char* filename) {
+const char* loadFile(const char* filename) {
     FILE* fp = fopen(filename, "rb"); // Open file in binary read mode
     char* buffer = NULL;
     long filesize = 0;
