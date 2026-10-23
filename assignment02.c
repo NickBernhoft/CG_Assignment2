@@ -9,6 +9,7 @@ such as the GLFW binary and header
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #ifdef __APPLE__
     #define GL_SILENCE_DEPRECATION
@@ -102,22 +103,32 @@ int main()
 	
 	// making the camera transformation matrix
 	mat4 tm;
+	mat4 pm;
+	mat4 vm;
+	mat4 sm;
+
+
 	glm_mat4_identity(tm);
 
 	// presoective matrix
-	glm_perspective_default( (float) width / height, tm);
+	// default: fov=45deg, near=0.1 far=100.0
+	glm_perspective_default((float) width / height, pm);
 
     // gml lookat
-	vec3 eye = 		{0.0f, 0.0f, 0.2f};
+	vec3 eye = 		{0.0f, 0.0f, 1.0f};
 	vec3 center = 	{0.0f, 0.0f, 0.0f};
 	vec3 up = 		{0.0f, 1.0f, 0.0f};
-	glm_lookat(eye, center, up, tm);
+	glm_lookat(eye, center, up, vm);
 
 
 	// temporary scaling because the model is big
-	vec3 scale_amount = { 0.05f, 0.05f, 0.05f };
-    glm_scale(tm, scale_amount);
-  	// set the uniform in the snader
+	glm_mat4_identity(sm);
+	float scale = 1.0f / 40.0f;
+	vec3 scale_amount = { scale, scale, scale };
+    glm_scale(sm, scale_amount);
+
+	glm_mat4_mulN((mat4 *[]){&pm, &vm, &sm}, 3, tm);
+
 	glUniformMatrix4fv(trans_matrix_location, 1, GL_FALSE, (float*)tm);
 
 
@@ -138,11 +149,13 @@ int main()
 
 
 	/* Main Loop */
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // set wireframe rendering mode
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // set wireframe rendering mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
     double frameTime = 1.0 / 60.0;
     double lastFrame = glfwGetTime();
+    int eye_deg = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		//simple spin wait for now. optionally sleep to reduce CPU usage
@@ -150,6 +163,15 @@ int main()
         {
             // spin wait
         }
+
+        // update the transformation matrix
+        // we are rotationg the teapot 1 degree per frame
+        eye_deg = (eye_deg + 1) % 360;
+        glm_vec3_copy((vec3){cosf(glm_rad(eye_deg)), 0.0f, sinf(glm_rad(eye_deg))}, eye);
+
+        glm_lookat(eye, center, up, vm);
+        glm_mat4_mulN((mat4 *[]){&pm, &vm, &sm}, 3, tm);
+        glUniformMatrix4fv(trans_matrix_location, 1, GL_FALSE, (float*)tm);
 
 		glfwPollEvents();
 
