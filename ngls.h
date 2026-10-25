@@ -14,6 +14,9 @@ The function names comply with the standards used in glad and GLEW and so on. */
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE // just incase it doesnt detect glad
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 #include <stdio.h>
 #include <GLFW/glfw3.h>
 
@@ -42,14 +45,15 @@ typedef struct
 /* Function Prototypes */
 
 // openGL shortcuts
-GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVertices);
+const GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVertices);
 const GLuint buildVertexShader(const char* vertex_shader_text);
 const GLuint buildFragmentShader(const char* fragment_shader_text);
 
-// each of these is somewhat more abstract and automated as the number goes up
 const GLuint buildProgram(GLuint vertex_shader, const GLuint fragment_shader);
 const GLuint buildProgram2(const char* vertex_shader_text, const char* fragment_shader_text);
 const GLuint buildProgram3(const char* vs_file, const char* fs_file);
+
+const GLuint loadTexture(char* filename);
 
 // helper functions
 const char* loadFile(const char* filename); // note: this function was generated using AI
@@ -62,7 +66,7 @@ size_t element_size: size in bytes of the type of data youre buffering.
 size_t numVertices: number of elements in the array you would like to buffer
 
 */
-GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVertices)
+const GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVertices)
 {
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
@@ -72,7 +76,6 @@ GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVertices
 
     return vertex_buffer;
 }
-
 
 
 /*
@@ -96,8 +99,6 @@ const GLuint buildVertexShader(const char* vertex_shader_text)
     return vertex_shader;
 }
 
-
-
 /*
 returns a single fragment shader handle
 */
@@ -118,7 +119,6 @@ const GLuint buildFragmentShader(const char* fragment_shader_text)
 
     return fragment_shader;
 }
-
 
 /* builds a Program from VS and FS handles */
 const GLuint buildProgram(GLuint vertex_shader, const GLuint fragment_shader)
@@ -156,7 +156,47 @@ const GLuint buildProgram3(const char* vs_file, const char* fs_file)
 }
     
 
+/* outputs GL_TEXTURE_2D */
+const GLuint loadTexture(char* filename)
+{
+    /* load the texture */
+    int width, height, nrChannels;
+    // Flip the image vertically on load if your texture coordinates expect (0,0) at the bottom-left
+    stbi_set_flip_vertically_on_load(1); 
+    unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
 
+    if (data == NULL) {
+        fprintf(stderr, "stb_image failed to load \"%s\": %s\n", filename, stbi_failure_reason());
+        return 0;
+    }
+
+    /* build the texture */
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // Set texture wrapping parameters (e.g., GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);   
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // Set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+    /* load onto the GPU */
+    // dynamic format
+    GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    stbi_image_free(data);
+    return texture;
+}
 
 
 /*
