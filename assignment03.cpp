@@ -28,8 +28,23 @@ GLFWwindow* buid_glfw_window(int width, int height);
 
 int main(int argc, char *argv[])
 {	
-	int width = 640;
-    int height = 640;
+
+	int width = 800;
+    int height = 800;
+
+	if (argc == 3) // command line arguments
+	{
+		width = atoi(argv[1]);
+		height = atoi(argv[2]);
+	}
+	else if (argc != 1)
+	{
+		printf("invalid inputs. Arguments take the form of:\tassignment03.exe [width] [height]\n[width]: width of the render window\n[height]: height of the render window\n\n\n");
+	}
+
+
+
+
     GLFWwindow* window = buid_glfw_window(width, height);
 
 
@@ -85,7 +100,13 @@ int main(int argc, char *argv[])
 	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outputTex, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
+	// uniforms
 	GLint atomCountLoc = glGetUniformLocation(compute_program, "uAtomCount");
+	GLint camULoc = glGetUniformLocation(compute_program, "uCamU"); // view uniforms
+	GLint camVLoc = glGetUniformLocation(compute_program, "uCamV");
+	GLint camWLoc = glGetUniformLocation(compute_program, "uCamW");
+	GLint camELoc = glGetUniformLocation(compute_program, "uCamE");
+
 
 
 
@@ -94,6 +115,7 @@ int main(int argc, char *argv[])
 
     double frameTime = 1.0 / 60.0;
     double lastFrame = glfwGetTime();
+    int eye_deg = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		//simple spin wait for now. optionally sleep to reduce CPU usage
@@ -106,6 +128,46 @@ int main(int argc, char *argv[])
 
 
 		glUseProgram(compute_program);
+
+		// camera manilupation
+		eye_deg = (eye_deg + 1) % 360;
+
+		vec3 center  = { bounds.centerX, bounds.centerY, bounds.centerZ };
+		vec3 worldUp = { 0.0f, 1.0f, 0.0f };
+   		
+		// float U[3]   = { 1.0f, 0.0f, 0.0f }; // Right (+X)
+		// float V[3]   = { 0.0f, 1.0f, 0.0f }; // Up (+Y)
+		// float W[3]   = { 0.0f, 0.0f, 1.0f }; // Backwards (+Z, so -W looks down -Z)
+
+		float eye_position_x = bounds.centerX + bounds.boundingRadius * 3.5f * sinf(glm_rad(eye_deg));
+		float eye_position_y = bounds.centerY;
+		float eye_position_z = bounds.centerZ + bounds.boundingRadius * 3.5f * cosf(glm_rad(eye_deg));
+
+		float eye[3] = { eye_position_x, eye_position_y, eye_position_z};
+
+		vec3 W;
+		glm_vec3_sub(eye, center, W);
+		glm_vec3_normalize(W);
+
+		// 2. U points to the camera's right
+		vec3 U;
+		glm_vec3_cross(worldUp, W, U);
+		glm_vec3_normalize(U);
+
+		// 3. V points straight up relative to the camera's tilt
+		vec3 V;
+		glm_vec3_cross(W, U, V);
+
+		glUniform3fv(camULoc, 1, U);
+		glUniform3fv(camVLoc, 1, V);
+		glUniform3fv(camWLoc, 1, W);
+		glUniform3fv(camELoc, 1, eye);
+
+
+
+
+
+
 		
 		if (atomCountLoc != -1) {
             glUniform1i(atomCountLoc, static_cast<GLint>(atoms.size()));
