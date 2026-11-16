@@ -49,6 +49,7 @@ const GLuint buildVertexBuffer(void* vertices, size_t element_size, size_t numVe
 const GLuint buildVertexShader(const char* vertex_shader_text);
 const GLuint buildFragmentShader(const char* fragment_shader_text);
 
+const GLuint buildComputeProgram(const char* compute_shader_text);
 const GLuint buildProgram(GLuint vertex_shader, const GLuint fragment_shader);
 const GLuint buildProgram2(const char* vertex_shader_text, const char* fragment_shader_text);
 const GLuint buildProgram3(const char* vs_file, const char* fs_file);
@@ -119,6 +120,40 @@ const GLuint buildFragmentShader(const char* fragment_shader_text)
 
     return fragment_shader;
 }
+
+
+const GLuint buildComputeProgram(const char* compute_shader_text)
+{
+    GLint success;
+    char infoLog[512];
+
+    // Compile the compute shader
+    GLuint computeShader = glCreateShader(GL_COMPUTE_SHADER);
+    glShaderSource(computeShader, 1, &compute_shader_text, NULL);
+    glCompileShader(computeShader);
+
+    glGetShaderiv(computeShader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(computeShader, 512, NULL, infoLog);
+        fprintf(stderr, "Compute Shader Compilation Error:\n%s\n", infoLog);
+    }
+
+    // Link into its own standalone program
+    GLuint computeProgram = glCreateProgram();
+    glAttachShader(computeProgram, computeShader);
+    glLinkProgram(computeProgram);
+
+    glGetProgramiv(computeProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(computeProgram, 512, NULL, infoLog);
+        fprintf(stderr, "Compute Program Linking Error:\n%s\n", infoLog);
+    }
+
+    glDeleteShader(computeShader);
+
+    return computeProgram;
+}
+
 
 /* builds a Program from VS and FS handles */
 const GLuint buildProgram(GLuint vertex_shader, const GLuint fragment_shader)
